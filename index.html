@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="./css/reset.css"/>
+    <link rel="stylesheet" type="text/css" href="./css/style.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="./js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="options">
+            <i class="material-icons" style="font-size:20px; cursor: pointer;" @click="setDarkMode">invert_colors</i>
+        </div>
+        <div class="titulo-inicial">
+            <h2 id="titulo">Buscar Endereço</h2>
+        </div>
+        <section class="container">
+            <picture class="banner">
+                <img class="banner-img" :src="this.url" alt="background"/>
+            </picture>
+            <article class="campos" v-if="!informacoesBuscadas">
+                <input type="text" id="cep-field" @keyup="atualizaCep" placeholder="Insira o CEP ..." />
+                <button class="btn" v-if="cep.length === 8" @click="getEndereco"><i class="fa fa-search search-icon"></i></button>
+            </article>
+            <article class="informacoes" v-if="informacoesBuscadas">
+                <p class="informacoes-texto">
+                    Endereço: {{this.dados.logradouro}}
+                </p>
+                <p class="informacoes-texto" v-if="this.dados.complemento.length > 0">
+                    Complemento: {{this.dados.complemento}}
+                </p>
+                <p class="informacoes-texto">
+                    Bairro: {{this.dados.bairro}}
+                </p>
+                <p class="informacoes-texto">
+                    Estado: {{this.dados.uf}}
+                </p>
+            </article>
+            <article class="voltar" v-if="informacoesBuscadas">
+                <button class="voltar-btn" @click="buscarOutroCep"><i class="fa fa-long-arrow-left mr-10"></i>Buscar outro CEP</button>
+            </article>
+        </section>
+    </div>
+    <div class="footer">
+        <p><a target="_blank" href="https://www.joaoporfirio.com.br">Ver mais projetos</a></p>
+    </div>
+<script>
+    const vm = new Vue({
+        el: "#app",
+        data: {
+            cep: '',
+            url: './img/icone-background.svg',
+            dados: {},
+            informacoesBuscadas: false
+        },
+        
+        methods: {
+            async getEndereco(cep){
+                cep = this.cep;
+                await fetch(`https://viacep.com.br/ws/${cep}/json`)
+                    .then((response) => {
+                        return response.text();
+                    })
+                    .then((jsonData) => {
+                        const json = JSON.parse(jsonData)
+                        if(json.erro){
+                            alert("Endereço não encontrado")
+                        }else{
+                            this.dados = json;
+                            this.url = './img/icone-background-after.svg';
+                            this.informacoesBuscadas = true;
+                        }
+                    })
+            },
+            atualizaCep(event){
+                this.cep = event.target.value;
+            },
+            setDarkMode() {
+                var element = document.body;
+                element.classList.toggle("dark-mode");
+            },
+            buscarOutroCep(){
+                this.cep = '';
+                this.url = './img/icone-background.svg';
+                this.informacoesBuscadas = false;
+            }
+        }
+    })
+</script>
+</body>
+</html>
